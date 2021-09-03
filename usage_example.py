@@ -1,7 +1,7 @@
 import read_wos_database
 #%%
 # Define path to datanase files
-path_to_file = 'C:\\Users\\aesaae\\OneDrive - University of Bristol\\Inclusivity in ML and aerial robotics\\Inclusivity in ML and aerial robotics\\Resources\\Tutorials\\Bibliometrics\\LiteratureDatabases\\'
+path_to_file = 'C:\\Temp\\'
 # Create 'read_wos_database' instance
 test=read_wos_database.read_wos_database()
 # Set path to file(s)
