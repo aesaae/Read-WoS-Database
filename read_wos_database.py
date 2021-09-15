@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import squarify
 
 #%%
 class read_wos_database():
@@ -207,7 +208,6 @@ class read_wos_database():
         # Return 'pub_year' and 'line'
         return pub_year, line
     
-    
     def extract_author_address(self, line):
         
         # Initialise 'author_address_list'
@@ -276,9 +276,9 @@ class read_wos_database():
         wos_categories_list.append(this_category)
         # Increase 'line'
         line += 1
-        # Look for additional countries
+        # Look for additional catergories
         while self.file_content[line][0:2] == '  ':
-            # Additional country found, add them to list
+            # Additional category found, add them to list
             this_category = self.file_content[line][3:-1]
             wos_categories_list.append(this_category)
             # Increase 'line'
@@ -290,6 +290,30 @@ class read_wos_database():
             wos_categories_string = wos_categories_string +' ' +wos_categories_list[elem]
         # Return 'wos_categories_string' and 'line'
         return wos_categories_string, line
+    
+    def extract_wos_research_areas(self, line):
+        
+        # Initialise 'wos_research_areas_list'
+        wos_research_areas_list = []
+        # Add first country
+        this_area = self.file_content[line][3:-1]
+        wos_research_areas_list.append(this_area)
+        # Increase 'line'
+        line += 1
+        # Look for additional areas
+        while self.file_content[line][0:2] == '  ':
+            # Additional area found, add them to list
+            this_area = self.file_content[line][3:-1]
+            wos_research_areas_list.append(this_area)
+            # Increase 'line'
+            line += 1
+        #
+        wos_research_areas_string = wos_research_areas_list[0]
+        for elem in range(1,len(wos_research_areas_list)):
+            #
+            wos_research_areas_string = wos_research_areas_string +' ' +wos_research_areas_list[elem]
+        # Return 'wos_research_areas_string' and 'line'
+        return wos_research_areas_string, line
                 
     def parse_record(self, line):
         
@@ -346,8 +370,11 @@ class read_wos_database():
         elif self.file_content[line][0:2] == 'WC':
             wos_categories, line = self.extract_wos_categories(line)
             #
-            #
             self.entry['WC'] = wos_categories
+        elif self.file_content[line][0:2] == 'SC':
+            wos_research_areas, line = self.extract_wos_research_areas(line)
+            #
+            self.entry['SC'] = wos_research_areas
         # Leave this space to include additional fields after this
             
         # Don't include additional fields after this
@@ -407,6 +434,50 @@ class read_wos_database():
         #
         self.unique_countries_list = unique_countries_list
         self.unique_countries_total = len(self.unique_countries_list)
+        
+    def extract_wos_categories_list_stats(self):
+        
+        #
+        wos_categories_list = []
+        unique_wos_categories_list = []
+        # Extract number of entries in database
+        n_entries = self.pd_df.shape[0]
+        #
+        for entry in range(0,n_entries):
+            if self.pd_df.WC[entry] != None:
+                categories_in_entry = self.pd_df.WC[entry].split(sep=';')
+                for this_category in range(0,len(categories_in_entry)):
+                    wos_categories_list.append(categories_in_entry[this_category])
+        # Sort resulting list
+        unique_wos_categories_list=list(set(wos_categories_list))
+        unique_wos_categories_list.sort()
+        # Store results
+        self.unique_wos_categories_list = unique_wos_categories_list
+        self.unique_wos_categories_total = len(self.unique_wos_categories_list)
+        #
+        self.compute_wos_categories_per_year()
+        
+    def extract_wos_research_areas_list_stats(self):
+        
+        #
+        wos_research_areas_list = []
+        unique_wos_research_areas_list = []
+        # Extract number of entries in database
+        n_entries = self.pd_df.shape[0]
+        #
+        for entry in range(0,n_entries):
+            if self.pd_df.SC[entry] != None:
+                areas_in_entry = self.pd_df.SC[entry].split(sep=';')
+                for this_area in range(0,len(areas_in_entry)):
+                    wos_research_areas_list.append(areas_in_entry[this_area])
+        # Sort resulting list
+        unique_wos_research_areas_list=list(set(wos_research_areas_list))
+        unique_wos_research_areas_list.sort()
+        # Store results
+        self.unique_wos_research_areas_list = unique_wos_research_areas_list
+        self.unique_wos_research_areas_total = len(self.unique_wos_research_areas_list)
+        #
+        self.compute_wos_research_areas_per_year()
     
     def compute_country_pub_per_year(self):
         
@@ -431,6 +502,54 @@ class read_wos_database():
         #
         country_pub_per_year = country_pub_per_year.transpose().sort_values(by=['Total'], ascending=False)
         self.country_pub_per_year = country_pub_per_year.transpose()
+        
+    def compute_wos_categories_per_year(self):
+        
+        #
+        columns_dataframe = self.unique_years.tolist()
+        columns_dataframe.append('Total')
+        #
+        unique_wos_categories_stats=pd.DataFrame(np.zeros((len(self.unique_years)+1,len(self.unique_wos_categories_list))),index=columns_dataframe,columns=self.unique_wos_categories_list)
+        #
+        n_entries = self.pd_df.shape[0]
+        # Loop through entries in database
+        for entry in range(0,n_entries):
+            if self.pd_df.WC[entry] != None:
+                # Extract entry's categories
+                categories_in_entry = self.pd_df.WC[entry].split(sep=';')
+                # For each category in list 'categories_in_entry', update (category, year) pair
+                for this_category in range(0,len(categories_in_entry)):
+                    # Increase publication count for (category, year) pair
+                    unique_wos_categories_stats.loc[self.pd_df.PY[entry],categories_in_entry[this_category]] += 1
+        #
+        unique_wos_categories_stats.loc['Total',:] = unique_wos_categories_stats.iloc[:-1,:].sum()
+        #
+        unique_wos_categories_stats = unique_wos_categories_stats.transpose().sort_values(by=['Total'], ascending=False)
+        self.unique_wos_categories_stats = unique_wos_categories_stats.transpose()
+        
+    def compute_wos_research_areas_per_year(self):
+        
+        #
+        columns_dataframe = self.unique_years.tolist()
+        columns_dataframe.append('Total')
+        #
+        unique_wos_research_areas_stats=pd.DataFrame(np.zeros((len(self.unique_years)+1,len(self.unique_wos_research_areas_list))),index=columns_dataframe,columns=self.unique_wos_research_areas_list)
+        #
+        n_entries = self.pd_df.shape[0]
+        # Loop through entries in database
+        for entry in range(0,n_entries):
+            if self.pd_df.WC[entry] != None:
+                # Extract entry's categories
+                areas_in_entry = self.pd_df.SC[entry].split(sep=';')
+                # For each category in list 'areas_in_entry', update (area, year) pair
+                for this_area in range(0,len(areas_in_entry)):
+                    # Increase publication count for (area, year) pair
+                    unique_wos_research_areas_stats.loc[self.pd_df.PY[entry],areas_in_entry[this_area]] += 1
+        #
+        unique_wos_research_areas_stats.loc['Total',:] = unique_wos_research_areas_stats.iloc[:-1,:].sum()
+        #
+        unique_wos_research_areas_stats = unique_wos_research_areas_stats.transpose().sort_values(by=['Total'], ascending=False)
+        self.unique_wos_research_areas_stats = unique_wos_research_areas_stats.transpose()
     
     def plot_pub_per_year(self, norm=False):
         
@@ -500,4 +619,32 @@ class read_wos_database():
         #
         plt.xticks(rotation='vertical')
         plt.legend()
+        plt.show()
+        
+    def plot_treemap_wos_categories_total(self, show_labels=True):
+        
+        #
+        a=self.unique_wos_categories_stats.loc['Total']
+        b=pd.DataFrame({'categories':a.index,'values':a.values})
+        #
+        fig = plt.figure(figsize=(22,12))
+        if show_labels:
+            squarify.plot(sizes=b['values'], label=b['categories'], alpha=.8 )
+        else:
+            squarify.plot(sizes=b['values'], alpha=.8 )
+        plt.axis('off')
+        plt.show()
+    
+    def plot_treemap_wos_research_areas_total(self, show_labels=True):
+        
+        #
+        a=self.unique_wos_research_areas_stats.loc['Total']
+        b=pd.DataFrame({'categories':a.index,'values':a.values})
+        #
+        fig = plt.figure(figsize=(22,12))
+        if show_labels:
+            squarify.plot(sizes=b['values'], label=b['categories'], alpha=.8)
+        else:
+            squarify.plot(sizes=b['values'], alpha=.8)
+        plt.axis('off')
         plt.show()
