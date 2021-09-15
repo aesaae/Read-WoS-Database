@@ -447,7 +447,8 @@ class read_wos_database():
             if self.pd_df.WC[entry] != None:
                 categories_in_entry = self.pd_df.WC[entry].split(sep=';')
                 for this_category in range(0,len(categories_in_entry)):
-                    wos_categories_list.append(categories_in_entry[this_category])
+                    category = categories_in_entry[this_category].lstrip(' ')
+                    wos_categories_list.append(category)
         # Sort resulting list
         unique_wos_categories_list=list(set(wos_categories_list))
         unique_wos_categories_list.sort()
@@ -469,7 +470,8 @@ class read_wos_database():
             if self.pd_df.SC[entry] != None:
                 areas_in_entry = self.pd_df.SC[entry].split(sep=';')
                 for this_area in range(0,len(areas_in_entry)):
-                    wos_research_areas_list.append(areas_in_entry[this_area])
+                    research_area = areas_in_entry[this_area].lstrip(' ')
+                    wos_research_areas_list.append(research_area)
         # Sort resulting list
         unique_wos_research_areas_list=list(set(wos_research_areas_list))
         unique_wos_research_areas_list.sort()
@@ -520,7 +522,7 @@ class read_wos_database():
                 # For each category in list 'categories_in_entry', update (category, year) pair
                 for this_category in range(0,len(categories_in_entry)):
                     # Increase publication count for (category, year) pair
-                    unique_wos_categories_stats.loc[self.pd_df.PY[entry],categories_in_entry[this_category]] += 1
+                    unique_wos_categories_stats.loc[self.pd_df.PY[entry],categories_in_entry[this_category].lstrip(' ')] += 1
         #
         unique_wos_categories_stats.loc['Total',:] = unique_wos_categories_stats.iloc[:-1,:].sum()
         #
@@ -544,7 +546,7 @@ class read_wos_database():
                 # For each category in list 'areas_in_entry', update (area, year) pair
                 for this_area in range(0,len(areas_in_entry)):
                     # Increase publication count for (area, year) pair
-                    unique_wos_research_areas_stats.loc[self.pd_df.PY[entry],areas_in_entry[this_area]] += 1
+                    unique_wos_research_areas_stats.loc[self.pd_df.PY[entry],areas_in_entry[this_area].lstrip(' ')] += 1
         #
         unique_wos_research_areas_stats.loc['Total',:] = unique_wos_research_areas_stats.iloc[:-1,:].sum()
         #
