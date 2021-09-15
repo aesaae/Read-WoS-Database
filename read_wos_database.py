@@ -623,10 +623,20 @@ class read_wos_database():
         plt.legend()
         plt.show()
         
-    def plot_treemap_wos_categories_total(self, show_labels=True):
+    def plot_treemap_wos_categories_total(self, show_labels=True, **kwargs):
+        
+        #
+        lower_bound = kwargs.get('lower_bound', None)
+        upper_bound = kwargs.get('upper_bound', None)
         
         #
         a=self.unique_wos_categories_stats.loc['Total']
+        if lower_bound != None and upper_bound != None:
+            a=a.iloc[(a.values>=lower_bound) & (a.values<=upper_bound)]
+        elif lower_bound != None:
+            a=a.iloc[a.values>=lower_bound]
+        elif upper_bound != None:
+            a=a.iloc[a.values<=upper_bound]
         b=pd.DataFrame({'categories':a.index,'values':a.values})
         #
         fig = plt.figure(figsize=(22,12))
@@ -637,10 +647,19 @@ class read_wos_database():
         plt.axis('off')
         plt.show()
     
-    def plot_treemap_wos_research_areas_total(self, show_labels=True):
+    def plot_treemap_wos_research_areas_total(self, show_labels=True, **kwargs):
         
         #
+        lower_bound = kwargs.get('lower_bound', None)
+        upper_bound = kwargs.get('upper_bound', None)
+        #
         a=self.unique_wos_research_areas_stats.loc['Total']
+        if lower_bound != None and upper_bound != None:
+            a=a.iloc[(a.values>=lower_bound) & (a.values<=upper_bound)]
+        elif lower_bound != None:
+            a=a.iloc[a.values>=lower_bound]
+        elif upper_bound != None:
+            a=a.iloc[a.values<=upper_bound]
         b=pd.DataFrame({'categories':a.index,'values':a.values})
         #
         fig = plt.figure(figsize=(22,12))
