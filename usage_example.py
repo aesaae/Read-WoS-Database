@@ -34,5 +34,13 @@ test.plot_country_pub_per_year()
 #test.plot_country_pub_per_year(norm=True)
 #%% Plot Treemap of total (i.e., for all years) Web of Science's research categories
 test.plot_treemap_wos_categories_total(show_labels=False)
+#
+test.plot_treemap_wos_categories_total(lower_bound=5,upper_bound=400)
 #%% Plot Treemap of total (i.e., for all years) Web of Science's research areas
 test.plot_treemap_wos_research_areas_total()
+#%%
+test.plot_treemap_wos_research_areas_total(lower_bound=5)
+#%%
+test.plot_treemap_wos_research_areas_total(upper_bound=400)
+#%%
+test.plot_treemap_wos_research_areas_total(lower_bound=5,upper_bound=400)
