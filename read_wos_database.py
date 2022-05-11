@@ -623,6 +623,36 @@ class read_wos_database():
         plt.legend()
         plt.show()
         
+    def produce_treemap(self, data, show_labels=True, **kwargs):
+        
+        display_values = kwargs.get('display_values', None)
+        color = kwargs.get('color', None)
+        color_map = kwargs.get('color_map', None)
+        plot_size = kwargs.get('plot_size', None)
+        axis_flag = kwargs.get('axis_flag', 'on')
+        #
+        if plot_size == None:
+            plot_size = (22,11)
+        if color_map != None:
+            cmap = plt.get_cmap(color_map)
+            color = cmap(np.linspace(start=0,stop=1,num=len(data['values'])))
+            print(len(color))
+        #
+        normed_values = squarify.normalize_sizes(data['values'], 100, 100)
+        #
+        fig,ax = plt.subplots(figsize=plot_size)
+        if show_labels:
+            if display_values:
+                squarify.plot(sizes=data['values'], label=data['categories'], value=data['values'], alpha=.8, color=color)
+            else:
+                squarify.plot(sizes=data['values'], label=data['categories'], alpha=.8, color=color)
+        else:
+            squarify.plot(sizes=data['values'], alpha=.8)
+        ax.axis(axis_flag)
+        plt.show()
+        #
+        return ax, normed_values
+        
     def plot_treemap_wos_categories_total(self, show_labels=True, **kwargs):
         
         #
@@ -638,20 +668,17 @@ class read_wos_database():
         elif upper_bound != None:
             a=a.iloc[a.values<=upper_bound]
         b=pd.DataFrame({'categories':a.index,'values':a.values})
+        # Produce Treemap
+        ax, normed_values = self.produce_treemap(b, show_labels, **kwargs)
         #
-        fig = plt.figure(figsize=(22,12))
-        if show_labels:
-            squarify.plot(sizes=b['values'], label=b['categories'], alpha=.8 )
-        else:
-            squarify.plot(sizes=b['values'], alpha=.8 )
-        plt.axis('off')
-        plt.show()
+        return ax, normed_values
     
     def plot_treemap_wos_research_areas_total(self, show_labels=True, **kwargs):
         
         #
         lower_bound = kwargs.get('lower_bound', None)
         upper_bound = kwargs.get('upper_bound', None)
+        #display_values = kwargs.get('display_values', None)
         #
         a=self.unique_wos_research_areas_stats.loc['Total']
         if lower_bound != None and upper_bound != None:
@@ -661,11 +688,7 @@ class read_wos_database():
         elif upper_bound != None:
             a=a.iloc[a.values<=upper_bound]
         b=pd.DataFrame({'categories':a.index,'values':a.values})
+        # Produce Treemap
+        ax, normed_values = self.produce_treemap(b, show_labels, **kwargs)
         #
-        fig = plt.figure(figsize=(22,12))
-        if show_labels:
-            squarify.plot(sizes=b['values'], label=b['categories'], alpha=.8)
-        else:
-            squarify.plot(sizes=b['values'], alpha=.8)
-        plt.axis('off')
-        plt.show()
+        return ax, normed_values
