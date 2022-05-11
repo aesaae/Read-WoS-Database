@@ -44,3 +44,10 @@ test.plot_treemap_wos_research_areas_total(lower_bound=5)
 test.plot_treemap_wos_research_areas_total(upper_bound=400)
 #%%
 test.plot_treemap_wos_research_areas_total(lower_bound=5,upper_bound=400)
+#%%
+test.plot_treemap_wos_research_areas_total(lower_bound=5,upper_bound=400, display_values=True)
+#%%
+test.plot_treemap_wos_research_areas_total(lower_bound=5,upper_bound=400, display_values=True, color_map='RdPu_r')
+#%%
+this_ax,norm_val = test.plot_treemap_wos_research_areas_total(lower_bound=5,upper_bound=400, display_values=True,
+                                                              color_map='terrain',plot_size=(15,7.5))
